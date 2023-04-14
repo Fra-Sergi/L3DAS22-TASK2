@@ -2,7 +2,7 @@
 
 # download l3dass22 dataset
 
-DOWNLOAD_PATH='./dataset/l3das22'
+DOWNLOAD_PATH='/content/gdrive/MyDrive/project_folder/L3DAS22-TASK2/dataset/l3das22'
 kaggle datasets download -d l3dasteam/l3das22 -p $DOWNLOAD_PATH --force --unzip
 
 
