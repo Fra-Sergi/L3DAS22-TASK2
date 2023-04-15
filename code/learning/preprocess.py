@@ -108,29 +108,35 @@ class Preprocessor_task2:
         
 
         for idx, data_dir in enumerate(self.data_dir_list):
-            h5_dir = self.data_h5_dir_list[idx]
-            data_path = os.listdir(data_dir)
-            data_path_A = [i for i in data_path if i.split('.')[0].split('_')[-1]=='A']
-            audio_count = 0
-            for wav_file_A in data_path_A:
-                wav_file_B = wav_file_A[:-5] + 'B' +  wav_file_A[-4:]  #change A with B
-                wav_path_A = data_dir.joinpath(wav_file_A)
-                wav_path_B = data_dir.joinpath(wav_file_B)
-                data_A, _ = librosa.load(wav_path_A, sr=self.cfg_logmelIV['sample_rate'], mono=False)
-                data_B, _ = librosa.load(wav_path_B, sr=self.cfg_logmelIV['sample_rate'], mono=False)
+            count = 0
+            flag = input("cento")
+            if flag == 'cento':
+                h5_dir = self.data_h5_dir_list[idx]
+                data_path = os.listdir(data_dir)
+                data_path_A = [i for i in data_path if i.split('.')[0].split('_')[-1]=='A']
+                audio_count = 0
+                for wav_file_A in data_path_A:
+                    wav_file_B = wav_file_A[:-5] + 'B' +  wav_file_A[-4:]  #change A with B
+                    wav_path_A = data_dir.joinpath(wav_file_A)
+                    wav_path_B = data_dir.joinpath(wav_file_B)
+                    data_A, _ = librosa.load(wav_path_A, sr=self.cfg_logmelIV['sample_rate'], mono=False)
+                    data_B, _ = librosa.load(wav_path_B, sr=self.cfg_logmelIV['sample_rate'], mono=False)
 
-                # stack two ambisonics data
-                data = np.concatenate((data_A, data_B), axis=0)
+                    # stack two ambisonics data
+                    data = np.concatenate((data_A, data_B), axis=0)
 
-                # save to h5py
-                h5_file = wav_file_A.replace('_A','').replace('.wav','.h5')
-                h5_path = h5_dir.joinpath(h5_file)
-                with h5py.File(h5_path, 'w') as hf:
-                        hf.create_dataset(name='waveform', data=float_samples_to_int16(data), dtype=np.int16)
+                    # save to h5py
+                    h5_file = wav_file_A.replace('_A','').replace('.wav','.h5')
+                    h5_path = h5_dir.joinpath(h5_file)
+                    with h5py.File(h5_path, 'w') as hf:
+                            hf.create_dataset(name='waveform', data=float_samples_to_int16(data), dtype=np.int16)
 
-                audio_count += 1
+                    audio_count += 1
 
-                print('{}, {}, {}'.format(audio_count, h5_path, data.shape))
+                    print('{}, {}, {}'.format(audio_count, h5_path, data.shape))
+                    count += 1
+                    if count >= 100:
+                        break
 
 
     def extract_frame_label(self):
@@ -153,34 +159,40 @@ class Preprocessor_task2:
         quantize = lambda x: round(float(x) / self.dataset.label_resolution)
         
         for idx, label_dir in enumerate(self.label_dir_list): # label dir
-            label_list = os.listdir(label_dir)
-            self.meta_frame_csv_dir_list[idx].mkdir(parents=True, exist_ok=True)
-            iterator = tqdm(enumerate(label_list), total=len(label_list), unit='it')
-            for idy, path in iterator: # label path
-                frame_label = {}
-                for i in range(num_frames):
-                    frame_label[i] = []
-                path = label_dir.joinpath(path)
-                df = pd.read_csv(path)
-                meta_path = self.meta_frame_csv_dir_list[idx].joinpath(path.stem + '.csv')
-                for idz, row in df.iterrows():
-                    #compute start and end frame position (quantizing)
-                    start = quantize(row['Start'])
-                    end = quantize(row['End'])
-                    start_frame = int(start)
-                    end_frame = int(end)
-                    class_id = self.dataset.label_dic_task2[row['Class']]  #int ID of sound class name
-                    sound_frames = np.arange(start_frame, end_frame)
-                    for f in sound_frames:
-                        local_frame_label = [class_id, row['X'], row['Y'],row['Z'], idz]
-                        frame_label[f].append(local_frame_label)
-                for frame in range(num_frames):
-                    if frame_label[frame]:
-                        for event in frame_label[frame]:
-                            event[0] = find_key_from_value(self.dataset.label_dic_task2, event[0])[0]
-                            with meta_path.open('a') as f:
-                                f.write('{},{},{},{},{},{}\n'.format(frame, event[0], event[1], event[2], event[3], event[4]))   
-                tqdm.write('{}, {}'.format(idy, meta_path))
+            count = 0
+            flag = input("cento")
+            if flag == 'cento':
+                label_list = os.listdir(label_dir)
+                self.meta_frame_csv_dir_list[idx].mkdir(parents=True, exist_ok=True)
+                iterator = tqdm(enumerate(label_list), total=len(label_list), unit='it')
+                for idy, path in iterator: # label path
+                    frame_label = {}
+                    for i in range(num_frames):
+                        frame_label[i] = []
+                    path = label_dir.joinpath(path)
+                    df = pd.read_csv(path)
+                    meta_path = self.meta_frame_csv_dir_list[idx].joinpath(path.stem + '.csv')
+                    for idz, row in df.iterrows():
+                        #compute start and end frame position (quantizing)
+                        start = quantize(row['Start'])
+                        end = quantize(row['End'])
+                        start_frame = int(start)
+                        end_frame = int(end)
+                        class_id = self.dataset.label_dic_task2[row['Class']]  #int ID of sound class name
+                        sound_frames = np.arange(start_frame, end_frame)
+                        for f in sound_frames:
+                            local_frame_label = [class_id, row['X'], row['Y'],row['Z'], idz]
+                            frame_label[f].append(local_frame_label)
+                    for frame in range(num_frames):
+                        if frame_label[frame]:
+                            for event in frame_label[frame]:
+                                event[0] = find_key_from_value(self.dataset.label_dic_task2, event[0])[0]
+                                with meta_path.open('a') as f:
+                                    f.write('{},{},{},{},{},{}\n'.format(frame, event[0], event[1], event[2], event[3], event[4]))
+                    tqdm.write('{}, {}'.format(idy, meta_path))
+                    count += 1
+                    if count >= 100:
+                        break
 
 
     def extract_track_label(self):
@@ -195,37 +207,43 @@ class Preprocessor_task2:
         quantize = lambda x: round(float(x) / self.dataset.label_resolution)
 
         for idx, label_dir in enumerate(self.label_dir_list):
-            label_list = os.listdir(label_dir)
-            self.meta_track_h5_dir_list[idx].mkdir(parents=True, exist_ok=True)
-            iterator = tqdm(enumerate(label_list), total=len(label_list), unit='it')
-            for idy, path in iterator:
-                sed_label = np.zeros((num_frames, num_tracks, num_classes))
-                doa_label = np.zeros((num_frames, num_tracks, 3))
-                path = label_dir.joinpath(path)
-                df = pd.read_csv(path)
-                for idz, row in df.iterrows():
-                    #compute start and end frame position (quantizing)
-                    start = quantize(row['Start'])
-                    end = quantize(row['End'])
-                    start_frame = int(start)
-                    end_frame = int(end)
-                    class_id = self.dataset.label_dic_task2[row['Class']]  #int ID of sound class name
-                    for track_idx in range(num_tracks):
-                        if sed_label[start_frame][track_idx].sum() == 0:
-                            sed_label[start_frame:end_frame, track_idx, class_id] = 1
-                            doa_label[start_frame:end_frame, track_idx, 0] = row['X'] 
-                            doa_label[start_frame:end_frame, track_idx, 1] = row['Y']
-                            doa_label[start_frame:end_frame, track_idx, 2] = row['Z'] 
-                            break
-                        else:
-                            track_idx += 1
+            count = 0
+            flag = input("cento")
+            if flag == 'cento':
+                label_list = os.listdir(label_dir)
+                self.meta_track_h5_dir_list[idx].mkdir(parents=True, exist_ok=True)
+                iterator = tqdm(enumerate(label_list), total=len(label_list), unit='it')
+                for idy, path in iterator:
+                    sed_label = np.zeros((num_frames, num_tracks, num_classes))
+                    doa_label = np.zeros((num_frames, num_tracks, 3))
+                    path = label_dir.joinpath(path)
+                    df = pd.read_csv(path)
+                    for idz, row in df.iterrows():
+                        #compute start and end frame position (quantizing)
+                        start = quantize(row['Start'])
+                        end = quantize(row['End'])
+                        start_frame = int(start)
+                        end_frame = int(end)
+                        class_id = self.dataset.label_dic_task2[row['Class']]  #int ID of sound class name
+                        for track_idx in range(num_tracks):
+                            if sed_label[start_frame][track_idx].sum() == 0:
+                                sed_label[start_frame:end_frame, track_idx, class_id] = 1
+                                doa_label[start_frame:end_frame, track_idx, 0] = row['X']
+                                doa_label[start_frame:end_frame, track_idx, 1] = row['Y']
+                                doa_label[start_frame:end_frame, track_idx, 2] = row['Z']
+                                break
+                            else:
+                                track_idx += 1
                 
-                meta_path = self.meta_track_h5_dir_list[idx].joinpath(path.stem + '.h5')
-                with h5py.File(meta_path, 'w') as hf:
-                    hf.create_dataset(name='sed_label', data=sed_label, dtype=np.float32)
-                    hf.create_dataset(name='doa_label', data=doa_label, dtype=np.float32)
+                    meta_path = self.meta_track_h5_dir_list[idx].joinpath(path.stem + '.h5')
+                    with h5py.File(meta_path, 'w') as hf:
+                        hf.create_dataset(name='sed_label', data=sed_label, dtype=np.float32)
+                        hf.create_dataset(name='doa_label', data=doa_label, dtype=np.float32)
                 
-                tqdm.write('{}, {}'.format(idy, meta_path))
+                    tqdm.write('{}, {}'.format(idy, meta_path))
+                    count += 1
+                    if count >= 100:
+                        break
     
 
     def extract_scalar(self):
