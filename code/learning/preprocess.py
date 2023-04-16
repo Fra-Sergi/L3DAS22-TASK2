@@ -245,8 +245,8 @@ class Preprocessor_task2:
         for it, batch_sample in iterator:
             if it == len(data_generator):
                 break
-            batch_x_A = batch_sample.batch_out_dict['waveform'][:, :4]
-            batch_x_B = batch_sample.batch_out_dict['waveform'][:, 4:]
+            batch_x_A = batch_sample['waveform'][:, :4]
+            batch_x_B = batch_sample['waveform'][:, 4:]
             batch_x_A.require_grad = False
             batch_x_B.require_grad = False
             if cuda_enabled:
