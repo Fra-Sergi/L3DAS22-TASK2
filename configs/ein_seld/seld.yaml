@@ -5,7 +5,7 @@ dataset_dir: ./dataset
 hdf5_dir: ./_hdf5
 task: seld # seld 
 data:
-  num_foa: 2 # 1 | 2
+  num_foa: 1 # 1 | 2
   label_normalize: respective # respective | unified |   
   train_chunklen_sec: 5
   train_hoplen_sec: 5
@@ -36,7 +36,7 @@ training:
   loss_type: all
   loss_beta: 0.9
   PIT_type: tPIT
-  batch_size: 10
+  batch_size: 4
   overlap: 1&2&3
   optimizer: adamw
   lr: 0.00035
